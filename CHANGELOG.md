@@ -5,6 +5,31 @@ All notable changes to the Flaphl Deprecation Contracts package will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2025-10-19
+
+### Added
+- Comprehensive unit test suite with 53 tests and 143 assertions
+- PHPUnit 10.5 as dev dependency
+- Tests for `_build_deprecation_message()` with all formatting scenarios
+- Tests for `get_deprecation_backtrace()` including file path filtering
+- Tests for `log_deprecation()` fallback behavior
+- Tests for `configure_deprecation_handler()` return value and restoration
+- Tests for `Severity` enum with all cases and methods
+- Tests for `Lifecycle` enum including `isRemovalImminent()` logic
+- Tests for `Deprecated` attribute with all properties and target types
+- Integration tests for error handling, file writing, and backtrace filtering
+- Composer test scripts: `composer test` and `composer test-coverage`
+- Development section in README with testing instructions
+
+### Technical
+- PSR-4 autoload-dev configuration for test namespace
+- PHPUnit XML configuration with strict settings
+- Test coverage for vsprintf error handling (debug vs production)
+- Test coverage for environment variable configuration
+- Test coverage for thread safety with LOCK_EX
+- Test coverage for enum serialization and comparison
+- Test coverage for attribute application to functions, classes, methods, properties, and constants
+
 ## [2.3.1] - 2025-10-19
 
 ### Added

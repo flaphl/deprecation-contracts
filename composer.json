@@ -12,13 +12,23 @@
     "require": {
         "php": "^8.2"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
+    },
     "autoload": {
         "psr-4": {
             "Flaphl\\Contracts\\Deprecation\\": ""
         },
+        "exclude-from-classmap": [
+            "/Tests/"
+        ],
         "files": [
             "functions.php"
         ]
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test-coverage": "phpunit --coverage-html coverage"
     },
     "minimum-stability": "dev",
     "prefer-stable": false

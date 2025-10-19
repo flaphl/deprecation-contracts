@@ -135,6 +135,39 @@ Flaphl deprecations follow a predictable lifecycle:
 3. **Warning Phase**: Increased visibility of deprecation notices
 4. **Removal Phase**: Deprecated feature removed in next major version
 
+## Development & Testing
+
+This package includes comprehensive unit tests for all functionality:
+
+```bash
+# Install development dependencies
+composer install
+
+# Run tests
+composer test
+
+# Generate coverage report
+composer test-coverage
+```
+
+### Test Coverage
+
+The test suite includes:
+- **Function tests**: All deprecation functions including `_build_deprecation_message`, `get_deprecation_backtrace`, `log_deprecation`, and handler configuration
+- **Enum tests**: `Severity` and `Lifecycle` enums with all methods and edge cases
+- **Attribute tests**: `Deprecated` attribute with all properties and target types
+- **Integration tests**: Error handler restoration, file fallback, and backtrace filtering
+
+Tests verify:
+- Message formatting with vsprintf and error handling
+- Backtrace filtering (internal function and file path filtering)
+- Log file configuration priority (explicit → env var → default)
+- Custom logger integration
+- Error handler return value and restoration
+- Thread safety with LOCK_EX
+- Enum value validation and comparison
+- Attribute application to all PHP elements
+
 ## Silencing Deprecations
 
 For legacy applications that cannot immediately migrate:
