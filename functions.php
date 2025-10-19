@@ -41,8 +41,10 @@ if (!function_exists('trigger_deprecation')) {
                 $formattedMessage = vsprintf($message, $args);
             } catch (\ValueError $e) {
                 // If formatting fails (mismatched placeholders/args), use raw message
-                // and append a warning about the formatting error
-                $formattedMessage = $message . ' [Warning: Failed to format message - ' . $e->getMessage() . ']';
+                // In debug mode (via env var), include detailed error; otherwise use generic marker
+                $debugMode = getenv('FLAPHL_DEBUG') !== false;
+                $errorDetail = $debugMode ? ' [Warning: Failed to format message - ' . $e->getMessage() . ']' : ' [Formatting Error]';
+                $formattedMessage = $message . $errorDetail;
             }
         }
         
@@ -84,20 +86,31 @@ if (!function_exists('get_deprecation_backtrace')) {
     {
         $trace = debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, $limit + 5);
         
-        // Filter out internal deprecation functions by name
+        // Filter out internal deprecation functions by name and file path
         $internalFunctions = [
             'get_deprecation_backtrace',
             'trigger_deprecation',
             'log_deprecation',
-            '_build_deprecation_message'
+            '_build_deprecation_message',
+            '_get_deprecation_log_file'
         ];
         
         $filteredTrace = [];
         foreach ($trace as $step) {
             $function = $step['function'] ?? '';
-            if (!in_array($function, $internalFunctions, true)) {
-                $filteredTrace[] = $step;
+            $file = $step['file'] ?? '';
+            
+            // Skip if function name matches internal functions
+            if (in_array($function, $internalFunctions, true)) {
+                continue;
             }
+            
+            // Skip if file path contains deprecation-contracts (optional stricter filtering)
+            if ($file && strpos($file, '/deprecation-contracts/functions.php') !== false) {
+                continue;
+            }
+            
+            $filteredTrace[] = $step;
         }
         
         // Limit the filtered trace
@@ -135,12 +148,16 @@ if (!function_exists('configure_deprecation_log_file')) {
     /**
      * Configures the log file path for deprecation logging.
      *
-     * @param string|null $path The path to the log file, or null to use default.
+     * Pass null to reset to default behavior (environment variable or temp dir fallback).
+     *
+     * @param string|null $path The path to the log file, or null to reset to defaults.
      *
      * @return void
      */
     function configure_deprecation_log_file(?string $path): void
     {
+        // Note: Passing null explicitly clears the configuration and falls back to
+        // environment variable or temp directory default
         $GLOBALS['_flaphl_deprecation_log_file'] = $path;
     }
 }
@@ -224,9 +241,10 @@ if (!function_exists('log_deprecation')) {
             $backtrace
         );
         
+        // Use LOCK_EX to avoid race conditions when multiple processes write simultaneously
         // Suppress warnings if file cannot be written (graceful degradation)
         // Fall back to error_log if file writing fails
-        if (@file_put_contents($logFile, $logEntry, \FILE_APPEND) === false) {
+        if (@file_put_contents($logFile, $logEntry, \FILE_APPEND | \LOCK_EX) === false) {
             error_log("DEPRECATION: $message");
         }
     }
@@ -240,12 +258,15 @@ if (!function_exists('configure_deprecation_handler')) {
      * The handler will be called for all E_USER_DEPRECATED errors.
      * Returns the previous error handler so it can be restored later.
      *
+     * Note: The return value may be a callable, a string (internal handler), or null.
+     * Treat it opaquely and restore using set_error_handler($previous) if needed.
+     *
      * @param callable $handler The custom handler function with signature:
      *                          function(string $errstr, string $errfile, int $errline): void
      *
-     * @return callable|null The previous error handler, or null if none was set.
+     * @return callable|string|null The previous error handler (may be callable, string, or null).
      */
-    function configure_deprecation_handler(callable $handler): ?callable
+    function configure_deprecation_handler(callable $handler): callable|string|null
     {
         return set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) use ($handler): bool {
             if ($errno === \E_USER_DEPRECATED) {

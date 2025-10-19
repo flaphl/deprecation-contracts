@@ -105,7 +105,27 @@ The log file path is determined in this order:
 2. **Environment variable**: `FLAPHL_DEPRECATION_LOG=/path/to/log`
 3. **Default fallback**: `sys_get_temp_dir() . '/flaphl_deprecation.log'`
 
+Pass `null` to `configure_deprecation_log_file()` to reset to default behavior:
+```php
+configure_deprecation_log_file(null); // Resets to env var or temp dir
+```
+
 If file writing fails, the system gracefully falls back to PHP's `error_log()`.
+
+### Debug Mode
+
+Enable detailed error messages for deprecation formatting issues:
+```php
+// Set environment variable for verbose error details
+putenv('FLAPHL_DEBUG=1');
+
+// Without debug mode, formatting errors show: [Formatting Error]
+// With debug mode, you get: [Warning: Failed to format message - ValueError details]
+```
+
+### Thread Safety
+
+Log file writes use `LOCK_EX` to prevent race conditions when multiple processes write simultaneously.
 
 ## Migration Strategy
 

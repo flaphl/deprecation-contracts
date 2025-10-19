@@ -5,6 +5,30 @@ All notable changes to the Flaphl Deprecation Contracts package will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.1] - 2025-10-19
+
+### Added
+- `FLAPHL_DEBUG` environment variable for verbose error details in formatting failures
+- `LOCK_EX` flag to `file_put_contents()` for thread-safe concurrent writes
+- Additional file path filtering in `get_deprecation_backtrace()` for stricter internal function removal
+- Documentation about null resetting behavior in `configure_deprecation_log_file()`
+
+### Changed
+- Return type of `configure_deprecation_handler()` changed from `?callable` to `callable|string|null` for accuracy
+- vsprintf error messages now show generic `[Formatting Error]` marker in production; detailed errors only with `FLAPHL_DEBUG=1`
+- Enhanced backtrace filtering to also check file paths, not just function names
+
+### Improved
+- Thread safety: File writes now use `LOCK_EX` to prevent race conditions
+- Debug ergonomics: Less noisy error messages in production logs
+- Documentation: Added notes about opaque return type handling for error handlers
+- Documentation: Clarified that passing `null` to `configure_deprecation_log_file()` resets to defaults
+
+### Technical
+- Added `_get_deprecation_log_file` to internal function filter list
+- File path filtering includes check for `/deprecation-contracts/functions.php`
+- Formatting error verbosity controlled by `FLAPHL_DEBUG` environment variable
+
 ## [2.3.0] - 2025-10-19
 
 ### Added
