@@ -5,6 +5,38 @@ All notable changes to the Flaphl Deprecation Contracts package will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2025-10-19
+
+### Added
+- `configure_deprecation_log_file()` function to set custom log file path
+- `configure_deprecation_logger()` function for PSR-3 logger integration
+- `_get_deprecation_log_file()` internal helper for log path resolution
+- Environment variable support: `FLAPHL_DEPRECATION_LOG` for log file configuration
+- Graceful fallback to `error_log()` when file writing fails
+
+### Changed
+- **BREAKING (minor)**: `configure_deprecation_handler()` now returns previous error handler
+- Removed `@` silence operator from `trigger_error()` call in `trigger_deprecation()`
+- Improved `_build_deprecation_message()` with safer prefix construction
+- Enhanced `get_deprecation_backtrace()` to filter by function name instead of array shifting
+- Added `ValueError` exception handling in `vsprintf()` calls for safer message formatting
+- Improved backtrace output format to handle missing file/line information gracefully
+- Log file path now follows priority: explicit config → env var → temp dir
+
+### Fixed
+- Fixed hard-coded log path issue in `log_deprecation()` - now configurable
+- Fixed fragile backtrace trimming that could remove incorrect frames
+- Fixed potential `%d` format issues with 'n/a' values in backtrace output
+- Fixed empty package/version producing malformed deprecation prefixes
+- Fixed unhandled `vsprintf()` errors when placeholder count mismatches arguments
+- Fixed missing return value from `configure_deprecation_handler()`
+
+### Technical
+- Backtrace filtering now uses function name matching for reliability
+- Message formatting errors are caught and reported inline
+- File logging has error suppression with `error_log()` fallback
+- Global state used for logger/log file configuration (`$GLOBALS['_flaphl_*']`)
+
 ## [2.2.0] - 2025-01-20
 
 ### Added
