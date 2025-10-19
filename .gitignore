@@ -3,3 +3,4 @@ composer.lock
 .phpunit.cache
 coverage/
 .vscode/
+phpunit.xml
